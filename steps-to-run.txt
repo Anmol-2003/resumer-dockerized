@@ -1,0 +1,7 @@
+sudo docker-compose up (runs the containers after building them) 
+
+sudo docker-compose up --build (rebuilds the containers if any changes were made) 
+
+sudo docker container rm $(sudo docker container ls -aq)
+
+sudo docker image rm $(sudo docker image ls -q) 

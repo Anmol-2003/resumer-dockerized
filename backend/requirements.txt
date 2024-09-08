@@ -1,0 +1,11 @@
+langchain 
+langchain-community
+langchain-groq
+langgraph
+fastapi[all]
+SQLAlchemy
+python-dotenv
+google-generativeai
+pylatex 
+aiomysql
+cryptography
