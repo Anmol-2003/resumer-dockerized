@@ -75,7 +75,7 @@ graph.add_edge('reevaluateResume', 'generateReview')
 graph.add_conditional_edges('generateReview', reflect)
 
 
-model = genai.GenerativeModel('gemini-1.5-flash', 
+model = genai.GenerativeModel('gemini-1.5-pro', 
                                 system_instruction= r"""
                                 You are a professional LaTeX code developer. You will be provided with two inputs:
                                 A Draft of a Resume: This contains the actual information about a candidate, such as their education, experience, projects, skills, etc.
@@ -84,8 +84,8 @@ model = genai.GenerativeModel('gemini-1.5-flash',
                                 Your Task:
                                 Fill in the LaTeX Template: Correctly insert the given data from the resume draft into the LaTeX code. Ensure that all provided information is accurately reflected in the final LaTeX code.
                                 
-                                Instructions:
-                                Percentage sybols: Add a backslash '\' before every percentage '%' symbol if using quantifying details, otherwise it'll throw an error.
+                                INSTRUCTIONS:
+                                Add a backslash '\' before every percentage '%' symbol if used any for representing data. Example : "Developed a model with cross validation accuracy of 96\%"
                                 Fix Any Errors: If there are any errors in the LaTeX code, such as missing arguments, incorrect formatting, or redundant commands, you must fix them.
                                 Do not change the latex code, you just have to rewrite it but with different data.
 
