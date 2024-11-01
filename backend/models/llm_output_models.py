@@ -1,4 +1,4 @@
-from langchain_core.pydantic_v1 import BaseModel, Field
+from pydantic import BaseModel, Field
 from typing import List
 
 ## Reviewing model
@@ -26,12 +26,11 @@ class Review(BaseModel):
 ## Instruction model
 
 class Project(BaseModel):
-    title: str = Field(description='Title of the projec to be included in the resume')
-    suggestions: str = Field(description='Suggestions to keep in mind while describing the project in the resume.')
+    title: str = Field(description='Title of the project')
+    suggestions: str = Field(description='Suggestions to instruct the candidate to focus on which part of the project and to properly describe and highlight different parts of the project')
 class Experience(BaseModel):
-    title: str = Field(description='Title of the role in the experience')
-    suggestions: str = Field(description='Suggestions to keep in mind while describing the experience in the resume.')
-
+    title: str = Field(description='Title of the experience')
+    suggestions: str = Field(description='Suggestions to instruct the candidate for properly describing the experience')
 class Instruction(BaseModel):
     projects: List[Project]
     experience : List[Experience]

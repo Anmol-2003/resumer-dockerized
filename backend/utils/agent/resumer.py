@@ -1,6 +1,5 @@
 from langgraph.graph import END, StateGraph
 from typing_extensions import TypedDict
-from typing import List
 from .generators import *
 from models import llm_output_models
 import json
@@ -9,57 +8,76 @@ genai.configure(api_key='AIzaSyBCIbuceShXA7ohqLvEKGLdWVBDKE_LJHM')
 
 class AgentState(TypedDict):
     job_description : str
-    instructions: llm_output_models.Instruction
+    instructions: str
     iterations : int
     userProjects: str
     userExperience : str 
     userSkills : str
     resume : str
-    review : llm_output_models.Review
+    review : str
 
 def instructionGenerator(state : AgentState):
     job_description = state['job_description']
     instructions = instructor_generator.invoke({'job_details' : job_description, 'projects' : state['userProjects'], 'experience' : state['userExperience']})
-    print('Instructions generated')
+    print('INSTRUTIONS GENERATED\n', instructions)
     return {'instructions' : instructions, 'iterations' : 0}
 
 # can remove this node and directly use the raw user entered data into the reflection loop 
 def resumeGenerator(state: AgentState):
     try:
-        projects = project_generator.invoke({'projects' : state['userProjects'], 'instructions' : state['instructions']['projects']})
-        experience = experience_generator.invoke({'experience': state['userExperience'], 'instructions' : state['instructions']['experience']})
-        print('Resume generated')
+        projects = project_generator.invoke({'projects' : state['userProjects'], 'instructions' : state['instructions']})
+        experience = experience_generator.invoke({'experience': state['userExperience'], 'instructions' : state['instructions']})
+        
+        print('RESUME DRAFT GENERATED')
         resume = 'PROJECTS\n' + projects + '\n\nEXPERIENCE\n' + experience 
         return {'resume' : resume}
     except Exception as e: 
-        print("Model's output was not correct.\n", e)
+        print("Exception occured while generating the resume content", e)
         return
+    
 def reviewer(state: AgentState):
     review = review_generator.invoke({'resume' : state['resume'], 'job_details' : state['job_description']})
-    print('Review Generated')
+    print('REVIEW GENERATED')
     return {'review' : review}
 
 # re evaluating the revised resume using self-reflection loops
 def reevaluation(state: AgentState):
     originalData = f"{state['userProjects']} \n {state['userExperience']}"
     resume = reevaluator.invoke({'originalData' : originalData, 'resume' : state['resume'], 'review' : json.dumps(state['review'], indent=2)})
-    print('Re-evaluation done')
+    print('RESUME DRAFT RE-EVALUATED')
     return {'resume' : resume, 'iterations' : state['iterations'] + 1}
 
 # callable function for the conditional edge
+# def reflect(state: AgentState):
+#     review = state['review']
+#     print('\n\n REVIEW \n\n', review)
+#     threshold = 85
+#     try:
+#         if state['iterations'] > 3:
+#             return END
+#         if review['overall_score'] >= threshold:
+#             return END
+#         return 'reevaluateResume'
+#     except Exception as e:
+#         print('Exception occured during self-reflection ', e)
+#         return END
+
 def reflect(state: AgentState):
     review = state['review']
     print('\n\n REVIEW \n\n', review)
     threshold = 85
-    try:
-        if state['iterations'] > 3:
-            return END
-        if review['overall_score'] >= threshold:
-            return END
-        return 'reevaluateResume'
-    except Exception as e:
-        print('Exception occured: ', e)
+
+    review_lines = review.splitlines()
+    print(review_linescl)
+    overall_score_line = next(line for line in review_lines if line.startswith("Overall Score:"))
+    overall_score = int(overall_score_line.split(":")[1].strip())
+
+    if state['iterations'] > 3:
         return END
+    if overall_score >= threshold:
+        return END
+    return 'reevaluateResume'
+
 
 graph = StateGraph(AgentState)
 graph.add_node('generate_instructions', instructionGenerator)

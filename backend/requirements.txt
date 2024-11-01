@@ -9,3 +9,5 @@ google-generativeai
 pylatex 
 aiomysql
 cryptography
+python-jose
+passlib

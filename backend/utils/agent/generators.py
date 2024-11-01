@@ -4,114 +4,131 @@ from langchain_groq import ChatGroq
 from models import llm_output_models
 
 # MODEL INITIALIZATION
-model_v1 = ChatGroq(model='llama3-8b-8192', api_key='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', temperature=0.1)
-model_v2 = ChatGroq(model='llama-3.1-8b-instant', api_key='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', temperature=0.1)
+# model_v1 = ChatGroq(model='llama3-8b-8192', api_key='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', temperature=0.1)
+model_v2 = ChatGroq(model='llama-3.1-8b-instant', api_key='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', temperature=0)
+model_v3 = ChatGroq(model='llama-3.2-11b-text-preview', api_key='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', temperature=0.1)
 
 
 # Node Prompts
 
-instruction_parser = JsonOutputParser(pydantic_object=llm_output_models.Instruction)
 instruction_generator_prompt = PromptTemplate(
     template = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
-    You are a Hiring Manager at a reputed MNC and are looking for exceptional resumes for the job.
-    You will be details of a job/internship opening along with candidate's projects and experiences.
+    You are a Hiring Manager at a prestigious multinational corporation (MNC) such as Google or Microsoft. Your goal is to evaluate candidates for job or internship openings and provide guidance on how they can effectively present their qualifications.
+
+    Your task involves analyzing the candidate's projects and experiences in relation to a specific job description. You need to shortlist relevant projects and experiences that align best with the job role, ensuring that at least two projects and two experiences are selected.
 
     <|eot_id|><|start_header_id|>user<|end_header_id|>
-    Your have to follow the following instructions:
-    1. Shortlist what projects, experience and skills would be relevant for the given job description. Pick carefully. 
-    2. for each project and experience, give suggestions of at most 1 point focusing on instructing the candidate to stress on what part of the project or experience.
-    3. You have to shortlist a minimum of 2 projects and 2 experience.
+    Follow these instructions carefully:
+    1. Review the job description and identify key skills and qualifications that are essential for the role.
+    2. Shortlist a minimum of two projects (preferrably 3) and two experiences from the candidate's background that directly relate to the job requirements.
+    3. For each selected project and experience, provide a brief suggestion (maximum one point long) on how the candidate should highlight specific aspects of their work to demonstrate relevance.
+    4. Give the output in a readable format which would be easier to interpret. 
 
-    Here is the required information.
-    Projects : \n {projects} \n
-    Experience : \n {experience} \n
-    Job Details : \n {job_details} \n
-    Output instructions : \n {format_instructions} \n
+    Here is the required information:
+    Projects: \n {projects} \n
+    Experience: \n {experience} \n
+    Job Details: \n {job_details} \n
 
     <|eot_id|><|start_header_id|>assistant<|end_header_id|>
-      """,
+    """,
     input_variables = ["job_details", 'projects', 'experience'], 
-    partial_variables = {'format_instructions' : instruction_parser.get_format_instructions()}
 )
-instructor_generator = instruction_generator_prompt | model_v2 | instruction_parser
+instructor_generator = instruction_generator_prompt | model_v3 | StrOutputParser()
 
 project_generator_prompt = PromptTemplate(
     template = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
-    You are a university student with exceptional grades in language and grammar. \
+    You are a university student with exceptional grades in language and grammar. 
     <|eot_id|><|start_header_id|>user<|end_header_id|>
-    You will be given projects section of the resume and some suggestions which have the names of the shortlisted projects that have to kept and rest to be removed. 
-    Follow the suggestions and rewrite the project section of the resume only keeping the shortlisted ones.
-    The input will be in json serialized format. 
+    You will receive the projects section of a resume along with suggestions indicating which projects should be kept and which should be removed. 
+    Your task is to follow these suggestions and rewrite the projects section of the resume, only including the shortlisted projects.
+    Please ignore any suggestions related to the experience section and focus solely on the project section.
 
-    suggestions : \n {instructions} \n
-    Projects List : \n {projects} \n
+    Suggestions: \n {instructions} \n
+    Projects List: \n {projects} \n
 
-    Output should be in the following format :
-    1. Name of project 1
-      - description 1
-      - description 2
-    2. Name of project 2
-      and so on...
-    Don't add anything of your own to the output, and also don't add wuantifying data which is not provided in the original data provided.
+    Please adhere strictly to the following output format:
+    1. **Project Name 1**
+       - Description point 1
+       - Description point 2
+    2. **Project Name 2**
+       - Description point 1
+       - Description point 2
+    ... and so on for each shortlisted project.
+    
+    Ensure that you do not add any additional content, and do not quantify or modify any details that are not present in the original data.
     <|eot_id|>
     <|start_header_id|>assistant<|end_header_id|>
     """,
     input_variables = ['projects', 'instructions']
     )
 
-project_generator = project_generator_prompt | model_v1 | StrOutputParser()
+project_generator = project_generator_prompt | model_v2 | StrOutputParser()
+
 experience_generator_prompt = PromptTemplate(
     template = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
-    You are a university student with exceptional grades in language and grammar. \
+    You are a university student with exceptional grades in language and grammar.
 
     <|eot_id|><|start_header_id|>user<|end_header_id|>
-    You will be given experience section of the resume and some suggestions which have the names of the shortlisted experiences that have to kept and rest to be removed. 
-    Follow the suggestions and rewrite the experience section of the resume only keeping the shortlisted ones.
-    The input will be in json serialized format. 
+    You will receive the experience section of a resume along with suggestions indicating which experiences should be kept and which should be removed. 
+    Your task is to follow these suggestions strictly and rewrite the experience section of the resume, only including the shortlisted experiences.
+    Please ignore any suggestions related to the projects section and focus solely on the experience section.
 
-    Output should be in points describing the work experience.
-    Suggestions : \n {instructions} \n
-    Experience List : \n {experience} \n
+    Suggestions: \n {instructions} \n
+    Experience List: \n {experience} \n
 
-    Output should be in the following format :
-    1. Firm/Internship name - Role - Duration
-      - description 1
-      - description 2
-    2. Firm/Internship name - Role - Duration
-      and so on...
-    Don't add anything of your own to the output, and also don't add quantifying data which is not provided in the original data provided.
+    Please adhere strictly to the following output format:
+    1. **Firm/Internship Name - Role - Duration**
+       - Description point 1
+       - Description point 2
+    2. **Firm/Internship Name - Role - Duration**
+       - Description point 1
+       - Description point 2
+    ... and so on for each shortlisted experience.
+
+    Ensure that you do not add any additional content, and do not quantify or modify any details that are not present in the original data.
     <|eot_id|>
     <|start_header_id|>assistant<|end_header_id|>
-    """, input_variables = ['experience', 'instructions']
+    """, 
+  input_variables = ['experience', 'instructions']
 )
-experience_generator = experience_generator_prompt | model_v1 | StrOutputParser()
+experience_generator = experience_generator_prompt | model_v2 | StrOutputParser()
 
 
 reviewParser = JsonOutputParser(pydantic_object= llm_output_models.Review)
 reviewer_prompt = PromptTemplate(
     template = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
-    You are a Hiring Manager at a major corporation. You have been given the "Projects" and "Experience" sections of a candidate's resume, along with the job description for the position they are applying for. \
-    Your task is to critically evaluate each of these sections based on the following four criteria: Impact, Brevity and Style.
+    You are a Hiring Manager at a large corporation. You have been given the "Projects" and "Experience" sections of a candidate's resume, along with the job description for the position they are applying for. 
+    Your task is to critically evaluate each of these sections based on the following four criteria: Impact, Brevity, and Style.
+    1. Impact: Assess the effectiveness of the content in terms of the quantifiable impact of the candidate's contributions, the variety of action verbs used, the presence of any weak or repetitive verbs, and any spelling or grammatical errors.
+    2. Brevity: Evaluate how concise and to-the-point the content is. Consider the overall length of the resume, the use of bullet points, and the length of each bullet point. Determine whether the content could be made more succinct without losing essential details.
+    3. Style: Analyze the writing style for clarity, professionalism, and alignment with industry standards. Look for consistency in formatting, use of active voice, and how well the candidate's achievements are highlighted.
 
-    Impact: Assess the effectiveness of the content in terms of the quantifiable impact of the candidate's contributions, the variety of action verbs used, the presence of any weak or repetitive verbs, and any spelling or grammatical errors.
-    Brevity: Evaluate how concise and to-the-point the content is. Consider the overall length of the resume, the use of bullet points, and the length of each bullet point. Determine whether the content could be made more succinct without losing essential details.
-    Style: Analyze the writing style for clarity, professionalism, and alignment with industry standards. Look for consistency in formatting, use of active voice, and how well the candidate's achievements are highlighted.
+    Frame the suggestions so that they can be given as input to an LLM for refining the resume. 
+    Make sure not to suggest the candidate to add non-factual data.
 
-    Frame the suggestions so that it can be given as input to an llm for refining the resume. \
-    The overall score will be the average of the score given to resume on individual aspects, that is impact, brevity and style. Scoring should be out of 100.
-    MAKE SURE NOT TO SUGGEST THE CANDIDATE TO ADD NON-FACTUAL DATA. 
-    <|eot_id|><|start_header_id|>user<|end_header_id|>
     Here are the required information. FOLLOW THE OUTPUT FORMAT INSTRUCTIONS NO MATTER WHAT.
-    Resume Draft: \n {resume} \n\n
-    Job Description: \n {job_details} \n\n
-    Output format instructions: \n{format_instructions} \n
-    <|eot_id|>
-    <|start_header_id|>assistant<|end_header_id|>
+    Resume Draft: \n {resume} \n
+    Job Description: \n {job_details} \n
+
+    OUTPUT FORMAT --- \n
+    
+    Overall Score: [score out of 100]
+    Impact:
+    - Score: [score out of 100]
+    - Suggestions: [detailed suggestions for improvement]
+    Brevity:
+    - Score: [score out of 100]
+    - Suggestions: [detailed suggestions for improvement]
+    Style:
+    - Score: [score out of 100]
+    - Suggestions: [detailed suggestions for improvement]
+
+    DON'T USE the * symbol around the headings of the output.
+    <|eot_id|><|start_header_id|>user<|end_header_id|>
     """,
     input_variables = ['resume', 'job_details'], 
-    partial_variables={'format_instructions' : reviewParser.get_format_instructions()}
 )
-review_generator = reviewer_prompt | model_v2 | reviewParser
+review_generator = reviewer_prompt | model_v3 | StrOutputParser()
 
 reeval_prompt = PromptTemplate(
     template="""
