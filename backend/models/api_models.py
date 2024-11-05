@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 class BufferResponse(BaseModel):
     message : str
@@ -60,3 +60,10 @@ class SignUp(BaseModel):
 class Login(BaseModel):
     email : str
     password : str
+
+class Profile(BaseModel):
+    firstName : str
+    lastName : str
+    email : EmailStr
+    githubLink : str
+    linkedinLink : str

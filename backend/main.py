@@ -28,7 +28,38 @@ app.include_router(authentication_route, tags=["auth"])
 @app.get('/')
 def buffer():
     return api_models.BufferResponse(message='Request received', status_code=200)
+@app.post('/saveUserProfile/{userId}')
+async def save_user_profile(userId: int, data: api_models.Profile, session: AsyncSession = Depends(get_async_session)):
+    profile = db_models.Profiles(
+        userId=userId,
+        firstName=data.firstName,
+        lastName=data.lastName,
+        email=data.email,
+        githubLink=data.githubLink,
+        linkedinLink=data.linkedinLink
+    )
+    try:
+        async with session.begin():
+            session.add(profile)
+            print('Profile added to database')
+    except Exception as e:
+        print(e)
+        return JSONResponse(content={'message': 'Exception occurred while inserting data', 'status_code': 500, 'data': ''})
+    return JSONResponse(content={'message': 'success', 'status_code': 200})
 
+'''
+@app.post('/saveUserProfile/{userId}')
+async def saveUserProfile(userId : int, data : api_models.Profile, session : AsyncSession = Depends(get_async_session)):
+    profile = db_models.Profiles(userId = userId, firstName = data.firstName, lastName = data.lastName, email = data.email, githubLink = data.githubLink, linkedinLink = data.linkedinLink)
+    try:
+        await session.begin()
+        await session.add(profile)
+        await session.commit()
+    except Exception as e: 
+        print(e)
+        return JSONResponse(content={'message' : 'Exception occured while inserting data' , 'status_code' : 500, 'data' : ''})
+    return JSONResponse(content={'message' :'success', 'status_code' : 200})
+'''
 @app.post('/saveProject')
 async def saveProject( data : api_models.Projects, session : AsyncSession = Depends(get_async_session)):
     try:
@@ -94,6 +125,26 @@ async def saveEducation(data : api_models.Education, session : AsyncSession = De
 #         session.add(skillsDetails)
 #         await session.commit()
 #     return api_models.Success(message='Skills saved')
+
+
+@app.post('/saveSkills') 
+async def saveSkills(data : api_models.Skills, session : AsyncSession = Depends(get_async_session)):
+    print(data)
+    skillsData = db_models.Skills(
+            userId = data.userId, 
+            languages = data.languages, 
+            courses = data.courses, 
+            frameworks = data.frameworks, 
+            certifications = data.certifications)
+    try:
+        async with session.begin(): 
+            session.add(skillsData)
+    except Exception as e: 
+        print(e)
+        return JSONResponse(content={'message' : 'Internal server error', 'status_code' : 500})
+    return JSONResponse(content={'message' : 'Data saved', 'status_code' : 200})
+
+
 
 @app.get('/fetchUserDetails/{userId}')
 async def fetchUserDetails(userId : str,  session : AsyncSession = Depends(get_async_session)):
