@@ -8,8 +8,7 @@ load_dotenv()
 os.environ['db_url'] = os.getenv('database_url')
 engine = create_async_engine(os.environ['db_url'], echo = True)
 
-print('Database Connection successful')
-
+# print('Database Connection successful')
 async def get_async_session():
     global engine
     async_conn = sessionmaker(

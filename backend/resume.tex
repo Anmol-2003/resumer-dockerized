@@ -1,0 +1,169 @@
+```latex
+\documentclass[letterpaper,11pt]{article}
+
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\input{glyphtounicode}
+
+\pagestyle{fancy}
+\fancyhf{} % clear all header and footer fields
+\fancyfoot{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\addtolength{\oddsidemargin}{-0.5in}
+\addtolength{\evensidemargin}{-0.5in}
+\addtolength{\textwidth}{1in}
+\addtolength{\topmargin}{-.5in}
+\addtolength{\textheight}{1.0in}
+
+\urlstyle{same}
+
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+
+\titleformat{\section}{
+  \vspace{-4pt}\scshape\raggedright\large
+}{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
+
+\pdfgentounicode=1
+
+\newcommand{\resumeItem}[1]{
+  \item\small{
+    {#1 \vspace{-2pt}}
+  }
+}
+
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-2pt}\item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & #2 \\
+      \textit{\small#3} & \textit{\small #4} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeSubSubheading}[2]{
+    \item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \textit{\small#1} & \textit{\small #2} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeProjectHeading}[2]{
+    \item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \small#1 & #2 \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeSubItem}[1]{\resumeItem{#1}\vspace{-4pt}}
+
+\renewcommand\labelitemii{$\vcenter{\hbox{\tiny$\bullet$}}$}
+
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{\begin{itemize}}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
+
+
+
+
+\begin{document}
+
+
+\begin{center}
+    \textbf{\Huge \scshape Anmol Bhardwaj} \\ \vspace{1pt}
+    \small  $|$\href{mailto:anmol03kw@gmail.com}{\underline{anmol03kw@gmail.com}} $|$ 
+    \href{https://www.linkedin.com/in/anmol-bhardwaj-55374321a/}{\underline{linkedin.com/in/anmol-bhardwaj-55374321a/}} $|$
+    \href{https://github.com/Anmol-2003}{\underline{github.com/Anmol-2003}}
+\end{center}
+
+
+%-----------EDUCATION-----------
+\section{Education}
+  \resumeSubHeadingListStart
+    \resumeSubheading
+      {Delhi Technological University}{}
+      {}{November 2022 -- August 2026}
+      \resumeItemListStart
+        \resumeItem{Grade: 8.46}
+      \resumeItemListEnd
+  \resumeSubHeadingListEnd
+
+
+%-----------EXPERIENCE-----------
+\section{Experience}
+  \resumeSubHeadingListStart
+
+    \resumeSubheading
+      {Data Engineer}{February 2024 -- April 2024}
+      {RizzAI}{}
+      \resumeItemListStart
+        \resumeItem{Developed a scraping pipeline to fetch data from multiple online e-commerce platforms.}
+        \resumeItem{Implemented an asynchronous script for CRUD operations in Postgres on a large scale.}
+        \resumeItem{Automated the entire data acquisition pipeline.}
+      \resumeItemListEnd
+
+    \resumeSubheading
+      {AI Research Intern}{December 2023 -- February 2024}
+      {GoldSmiths University, London}{}
+      \resumeItemListStart
+        \resumeItem{Developed an ensemble for classification of MBTI personality traits with multimodal inputs using RoBERTa and Random Forest Regressor.}
+        \resumeItem{Achieved 95.8\% accuracy, handling the high imbalance using SMOTE and other NLP augmentation strategies like lemmitization.}
+    \resumeItemListEnd
+  \resumeSubHeadingListEnd
+
+
+%-----------PROJECTS-----------
+\section{Projects}
+    \resumeSubHeadingListStart
+      \resumeProjectHeading
+          {\textbf{RailMadadv2}}{}
+          \resumeItemListStart
+            \resumeItem{An end-to-end complaint management system for Indian Railways.}
+            \resumeItem{Utilizes Python, MongoDB, and Parallel Programming, and features a chat-bot developed using an agentic framework with Gemini as core LLM and a 2-click form interface for registering complaint and reducing the registration time by 50\%.}
+            \resumeItem{Supports multilingual and multimodal inputs.}
+            \resumeItem{Complaint categorization and sub-categorization done with LLaMa-3.3-70B achieving 99.8\% accuracy.}
+            \resumeItem{Employs SOTA multi-modal models for extracting description from multi-modal inputs.}
+            \resumeItem{Smart reassignment of complaints amongst staffs (smart queues) of the same department to increase customer satisfaction and resolution rate.}
+            \resumeItem{Implements polling and complaint aggregation based on contextual similarity to update complaint priority and reduce starvation.}
+          \resumeItemListEnd
+      \resumeProjectHeading
+          {\textbf{SocioTrackr}}{}
+          \resumeItemListStart
+            \resumeItem{Developed a web application that performs analysis on texts, images, and videos to provide an insight on viewer perception about social media profile.}
+            \resumeItem{Works with Instagram, YouTube, and Reddit.}
+            \resumeItem{Deployed SOTA LLM models on Google Cloud to perform sentiment analysis, emotion classification, and other video and image analysis using CLIP and BLIP architectures.}
+          \resumeItemListEnd
+      \resumeProjectHeading
+          {\textbf{KeyValueDB}}{}
+          \resumeItemListStart
+            \resumeItem{A key-value LSM tree database developed from scratch using C++.}
+            \resumeItem{Employed skip list data structure for memTable and write ahead log for availability.}
+            \resumeItem{Managed concurrency using mutex locks, between write, memTable save to disk, and compaction operations, thus providing consistency to database state.}
+            \resumeItem{Used tombstone approach for persisting deletion of data in the database.}
+          \resumeItemListEnd
+    \resumeSubHeadingListEnd
+
+%-----------SKILLS-----------
+\section{Skills}
+ \begin{itemize}[leftmargin=0.15in, label={}]
+    \small{\item{
+     \textbf{Languages}{: Python, C++, Javascript(Basic), SQL} \\
+     \textbf{Frameworks}{: FastAPI, Flask, Django, Express.js, React.js, Tensorflow, Pytorch, SQLAlchemy, huggingface} \\
+     \textbf{Certifications}{: Machine Learning Specialization, MLOps specialization} \\
+     \textbf{Courses}{: Data structures and Algorithms, object oriented programming, Operating systems, Computer Networks, Distributed Systems, Database management systems}
+    }}
+ \end{itemize}
+\end{document}
+```

@@ -1,13 +1,13 @@
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text, update
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from utils.db_connector import get_async_session
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.responses import FileResponse, Response
 from models import api_models, db_models
 from utils.agent.resumer import agent, generateLatexCode
-import asyncio
 import subprocess
 import os
 from authentication.auth import router as authentication_route
@@ -16,10 +16,10 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Adjust for specific domains
+    allow_origins=["*"], 
     allow_credentials=True,
-    allow_methods=["*"], # METHODS to be allowed to the server
-    allow_headers=["*"], # pdf, json etc
+    allow_methods=["*"], 
+    allow_headers=["*"], 
 )
 
 # Attaching the authentication route with the main application
@@ -28,6 +28,8 @@ app.include_router(authentication_route, tags=["auth"])
 @app.get('/')
 def buffer():
     return api_models.BufferResponse(message='Request received', status_code=200)
+
+
 @app.post('/saveUserProfile/{userId}')
 async def save_user_profile(userId: int, data: api_models.Profile, session: AsyncSession = Depends(get_async_session)):
     profile = db_models.Profiles(
@@ -41,25 +43,14 @@ async def save_user_profile(userId: int, data: api_models.Profile, session: Asyn
     try:
         async with session.begin():
             session.add(profile)
-            print('Profile added to database')
+        await session.commit()
+        print('Profile added to database')
+        
     except Exception as e:
         print(e)
-        return JSONResponse(content={'message': 'Exception occurred while inserting data', 'status_code': 500, 'data': ''})
-    return JSONResponse(content={'message': 'success', 'status_code': 200})
+        return JSONResponse(content={'message': 'Exception occurred while inserting data'}, status_code=500)
+    return JSONResponse(content={'message': 'success'}, status_code=200)
 
-'''
-@app.post('/saveUserProfile/{userId}')
-async def saveUserProfile(userId : int, data : api_models.Profile, session : AsyncSession = Depends(get_async_session)):
-    profile = db_models.Profiles(userId = userId, firstName = data.firstName, lastName = data.lastName, email = data.email, githubLink = data.githubLink, linkedinLink = data.linkedinLink)
-    try:
-        await session.begin()
-        await session.add(profile)
-        await session.commit()
-    except Exception as e: 
-        print(e)
-        return JSONResponse(content={'message' : 'Exception occured while inserting data' , 'status_code' : 500, 'data' : ''})
-    return JSONResponse(content={'message' :'success', 'status_code' : 200})
-'''
 @app.post('/saveProject')
 async def saveProject( data : api_models.Projects, session : AsyncSession = Depends(get_async_session)):
     try:
@@ -70,10 +61,10 @@ async def saveProject( data : api_models.Projects, session : AsyncSession = Depe
               techStack = data.techStack)
       async with session.begin():
           session.add(project)
-      return JSONResponse(content={'message' : 'Data saved successfully', 'status_code' : 200})
+      return JSONResponse(content={'message' : 'Data saved successfully'})
     except Exception as e:
         print(e)
-        return JSONResponse(content={'message' : 'Error occured in saving the data', 'status_code' : 500})
+        return JSONResponse(content={'message' : 'Error occured in saving the data'}, status_code=500)
     
 @app.post('/saveExperience')
 async def saveExperience(data : api_models.Experience,  session : AsyncSession = Depends(get_async_session)):
@@ -87,45 +78,36 @@ async def saveExperience(data : api_models.Experience,  session : AsyncSession =
       )
       async with session.begin():
           session.add(expDetails)
-      return JSONResponse(content={'message' : 'Data saved successfully', 'status_code' : 200})
+      return JSONResponse(content={'message' : 'Data saved successfully'})
+    except SQLAlchemyError as e:
+        print(e)
+        return JSONResponse(content={'message' : 'Error occured in SQLAlchemy'}, status_code=500)
     except Exception as e:
         print(e)
-        return JSONResponse(content={'message' : 'Error occured in saving the data', 'status_code' : 500})
+        return JSONResponse(content={'message' : 'Server Error'}, status_code=500)
     
 
 @app.post('/saveEducation')
 async def saveEducation(data : api_models.Education, session : AsyncSession = Depends(get_async_session)):
+    print(data)
     try:
         eduDetails = db_models.Education(
             userId = data.userId, 
             institution = data.institution, 
             duration = data.duration, 
-            location = data.location, 
+            # location = data.location, 
             grade = data.grade
         )
         async with session.begin():
           session.add(eduDetails)
-        return JSONResponse(content={'message' : 'Data saved successfully', 'status_code' : 200})
+        return JSONResponse(content={'message' : 'Data saved successfully'})
+    except SQLAlchemyError as e:
+        print(e)
+        return JSONResponse(content={'message' : 'Error occured in SQLAlchemy'}, status_code=500)
     except Exception as e:
         print(e)
-        return JSONResponse(content={'message' : 'Error occured in saving the data', 'status_code' : 500})
+        return JSONResponse(content={'message' : 'Server Error'}, status_code=500)
     
-
-
-# @app.post('/saveSkills')
-# async def saveSkills(data : api_models.Skills, session : AsyncSession = Depends(get_async_session)):
-#     skillsDetails = db_models.Skills(
-#             userId = data.userId,
-#         languages = data.languages, 
-#         frameworks = data.frameworks, 
-#         courses = data.courses, 
-#         certifications = data.certifications
-#     )
-#     async with session.begin():
-#         session.add(skillsDetails)
-#         await session.commit()
-#     return api_models.Success(message='Skills saved')
-
 
 @app.post('/saveSkills') 
 async def saveSkills(data : api_models.Skills, session : AsyncSession = Depends(get_async_session)):
@@ -139,10 +121,13 @@ async def saveSkills(data : api_models.Skills, session : AsyncSession = Depends(
     try:
         async with session.begin(): 
             session.add(skillsData)
-    except Exception as e: 
+    except SQLAlchemyError as e:
         print(e)
-        return JSONResponse(content={'message' : 'Internal server error', 'status_code' : 500})
-    return JSONResponse(content={'message' : 'Data saved', 'status_code' : 200})
+        return JSONResponse(content={'message' : 'Error occured in SQLAlchemy'}, status_code=500)
+    except Exception as e:
+        print(e)
+        return JSONResponse(content={'message' : 'Server Error'}, status_code=500)
+    return JSONResponse(content={'message' : 'Data saved'}, status_code=200)
 
 
 
@@ -189,17 +174,18 @@ async def fetchUserDetails(userId : str,  session : AsyncSession = Depends(get_a
       }
       print('DETAILS\n\n', details)
       if not details:
-          return JSONResponse(content={'message' : 'User not found', 'status_code' : 500})
-      
+          return JSONResponse(content={'message' : 'User not found'}, status_code=500)
       
       return JSONResponse(content={
           'message' : 'successful retrieval of data', 
-          'status_code' : 200, 
           'data' : details
       })
+    except SQLAlchemyError as e:
+        print(e)
+        return JSONResponse(content={'message' : 'Error occured in SQLAlchemy'}, status_code=500)
     except Exception as e: 
         print(e)
-        return JSONResponse(content = {'message' : 'Host error', 'status_code' : 500})
+        return JSONResponse(content = {'message' : 'Host error'}, status_code=500)
     
 ## Deleting data
 @app.delete('/deleteDetails/{content}/{itemId}')
@@ -223,12 +209,11 @@ async def deleteDetails(content : str, itemId : int, session : AsyncSession = De
         else :
             return JSONResponse(content={
                 'message' : 'Invalid client request', 
-                'status_code' : 400,
-            })
-        return JSONResponse(content={'message' : 'Detail deleted successfully', 'status_code' : 200})
+            }, status_code=400)
+        return JSONResponse(content={'message' : 'Detail deleted successfully'})
     except Exception as e:
         print(e)
-        return JSONResponse(content={'message' : 'Error while deleting data', 'status_code' : 500})
+        return JSONResponse(content={'message' : 'Error while deleting data'}, status_code=500)
 
 ## Updating the details
 @app.post('/updateDetails/{content}/{itemId}')
@@ -289,13 +274,13 @@ async def updateDetails(content: str, itemId: int, data: dict, session: AsyncSes
             await session.commit()
 
         else:
-            return JSONResponse(content={'message': 'Incorrect content type', 'status_code': 400, 'data': ''})
-        
-        return JSONResponse(content={'message': 'Data updated', 'status_code': 200, 'data': ''})
+            print('User requested invalid information to be deleted.')
+            return JSONResponse(content={'message': 'Incorrect content type'}, status_code=400)
+        return JSONResponse(content={'message': 'Data updated'})
 
     except Exception as e:
         print(e)
-        return JSONResponse(content={'message': 'Error in updating the details', 'status_code': 500, 'data': ''})
+        return JSONResponse(content={'message': 'Error in updating the details'}, status_code=500)
 
 
 # generate resume API under development
@@ -372,6 +357,9 @@ async def generateResume(template : int, data : dict, session : AsyncSession=Dep
         return FileResponse(path='./resume.pdf', media_type = 'application/pdf', status_code=200)
       
     except HTTPException as e:  
+      print(e)
       return Response(status_code = 500, content=str(e))
-
+    except Exception as e: 
+        print(e)
+        return Response(status_code=500, content=str(e))
 

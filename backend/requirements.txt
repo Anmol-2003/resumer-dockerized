@@ -11,3 +11,4 @@ aiomysql
 cryptography
 python-jose
 passlib
+bcrypt<4.0

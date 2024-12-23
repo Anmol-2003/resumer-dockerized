@@ -6,7 +6,7 @@ from models import llm_output_models
 # MODEL INITIALIZATION
 # model_v1 = ChatGroq(model='llama3-8b-8192', api_key='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', temperature=0.1)
 model_v2 = ChatGroq(model='llama-3.1-8b-instant', api_key='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', temperature=0)
-model_v3 = ChatGroq(model='llama-3.2-11b-text-preview', api_key='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', temperature=0.1)
+model_v3 = ChatGroq(model='llama-3.3-70b-versatile', api_key='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', temperature=0.1)
 
 
 # Node Prompts

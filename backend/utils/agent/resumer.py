@@ -1,10 +1,14 @@
 from langgraph.graph import END, StateGraph
 from typing_extensions import TypedDict
 from .generators import *
-from models import llm_output_models
 import json
 import google.generativeai as genai
-genai.configure(api_key='AIzaSyBCIbuceShXA7ohqLvEKGLdWVBDKE_LJHM')
+import os 
+from dotenv import load_dotenv
+load_dotenv()
+
+os.environ['gemini_api'] = os.getenv('gemini_api')
+genai.configure(api_key=os.environ['gemini_api'])
 
 class AgentState(TypedDict):
     job_description : str
@@ -47,28 +51,13 @@ def reevaluation(state: AgentState):
     print('RESUME DRAFT RE-EVALUATED')
     return {'resume' : resume, 'iterations' : state['iterations'] + 1}
 
-# callable function for the conditional edge
-# def reflect(state: AgentState):
-#     review = state['review']
-#     print('\n\n REVIEW \n\n', review)
-#     threshold = 85
-#     try:
-#         if state['iterations'] > 3:
-#             return END
-#         if review['overall_score'] >= threshold:
-#             return END
-#         return 'reevaluateResume'
-#     except Exception as e:
-#         print('Exception occured during self-reflection ', e)
-#         return END
-
 def reflect(state: AgentState):
     review = state['review']
     print('\n\n REVIEW \n\n', review)
     threshold = 85
 
     review_lines = review.splitlines()
-    print(review_linescl)
+    print(review_lines)
     overall_score_line = next(line for line in review_lines if line.startswith("Overall Score:"))
     overall_score = int(overall_score_line.split(":")[1].strip())
 
